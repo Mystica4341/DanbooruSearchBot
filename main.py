@@ -19,17 +19,30 @@ class Client(commands.Bot):
         # Sync the command tree with Discord
         await self.load_extension('module.danbooru')
         print("modules loaded successfully.")
-        try:
-            synced = await self.tree.sync()
-            print(f"Đã đồng bộ {len(synced)} slash command(s) toàn cầu!")
-        except Exception as e:
-            print(f"Lỗi khi đồng bộ slash command: {e}")
     
     async def on_ready(self):
         print('------')
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
         print(f'Danbooru Search Bot is ready and running!')
+        print('------')
+
+        # 1. Clear all local commands for each guild the bot is in
+        for guild in self.guilds:
+            try:
+                # Clear local commands for the guild
+                self.tree.clear_commands(guild=guild)
+                await self.tree.sync(guild=guild)
+                print(f"Đã xóa lệnh Local bị trùng tại server: {guild.name}")
+            except Exception as e:
+                print(f"Lỗi khi xóa lệnh Local ở {guild.name}: {e}")
+
+        # 2. Resync global commands
+        try:
+            synced = await self.tree.sync()
+            print(f"Đã đồng bộ {len(synced)} slash command(s) Global!")
+        except Exception as e:
+            print(f"Lỗi khi đồng bộ Global: {e}")
 
 bot = Client()
 
