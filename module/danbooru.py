@@ -187,7 +187,9 @@ class DanbooruModule(commands.Cog):
 
         await interaction.response.defer()
 
-        tags = await isNSFW(interaction, 'rating:e')  
+        tags = await isNSFW(interaction, 'rating:e')
+        if tags is None:
+            return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
 
         params = {
             'tags': 'rating:e',  # Explicit ratings
@@ -200,33 +202,32 @@ class DanbooruModule(commands.Cog):
             params['api_key'] = self.api_key
             params['login'] = self.api_login
 
-        while True:
-            async with aiohttp.ClientSession() as session:
-                try:
-                    headers = {
-                        'User-Agent': 'MyDiscordBot/1.0 (by Mirera on Discord)'
-                    }
+        async with aiohttp.ClientSession() as session:
+            try:
+                headers = {
+                    'User-Agent': 'MyDiscordBot/1.0 (by Mirera on Discord)'
+                }
 
-                    async with session.get("https://danbooru.donmai.us/posts.json", params=params, headers=headers) as response:
+                async with session.get("https://danbooru.donmai.us/posts.json", params=params, headers=headers) as response:
 
-                        if response.status == 200:
-                            data = await response.json()
+                    if response.status == 200:
+                        data = await response.json()
 
-                            # Filter out posts that don't have a valid file_url (exclude posts that are deleted or have no image or premium content)
-                            valid_posts = [post for post in data if post.get('file_url') is not None]
+                        # Filter out posts that don't have a valid file_url (exclude posts that are deleted or have no image or premium content)
+                        valid_posts = [post for post in data if post.get('file_url') is not None]
 
-                            if len(valid_posts) > 0:
-                                view = ImageEmbed(valid_posts, "Random NSFW")
-                                await interaction.followup.send(embed=view.create_embed(), view=view)
-
-                            else:
-                                await interaction.followup.send("No results found for random NSFW images.")
+                        if len(valid_posts) > 0:
+                            view = ImageEmbed(valid_posts, "Random NSFW")
+                            await interaction.followup.send(embed=view.create_embed(), view=view)
 
                         else:
-                            await interaction.followup.send(f"Error: Unable to fetch data from Danbooru (Status Code: {response.status}: {response.reason})")
+                            await interaction.followup.send("No results found for random NSFW images.")
 
-                except Exception as e:
-                    await interaction.followup.send(f"An error occurred while fetching data from Danbooru: {e}")
+                    else:
+                        await interaction.followup.send(f"Error: Unable to fetch data from Danbooru (Status Code: {response.status}: {response.reason})")
+
+            except Exception as e:
+                await interaction.followup.send(f"An error occurred while fetching data from Danbooru: {e}")
 
 
 async def setup(bot):
