@@ -44,6 +44,8 @@ class Client(commands.Bot):
         except Exception as e:
             print(f"Lỗi khi đồng bộ Global: {e}")
 
+        print('------')
+
 bot = Client()
 
 @bot.event

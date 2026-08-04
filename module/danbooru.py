@@ -88,6 +88,7 @@ class DanbooruModule(commands.Cog):
             await interaction.followup.send(f"❌ No results found for the given tags. `{tags}` on Danbooru.")
             return
 
+        print(f"Resolved user input '{tags}' to exact tag '{exact_tag}' for Danbooru search.")
         exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
         if exact_tag is None:
             return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
@@ -131,13 +132,18 @@ class DanbooruModule(commands.Cog):
 
     @app_commands.command(name='random', description='Fetches a list of random images from Danbooru')
     @app_commands.describe(tags='The tags to limit the pool', limit='Number of results to return (max 100)')
-    async def random(self, interaction: discord.Interaction, tags: Optional[str] = None, limit: Optional[int] = 10):
+    async def random(self, interaction: discord.Interaction, tags: Optional[str] = '', limit: Optional[int] = 10):
         """Searches Danbooru for random images"""
         
         await interaction.response.defer()
 
+        #if tags is not None:
         exact_tag = await auto_resolve_tag(tags)
+        if not exact_tag:
+            await interaction.followup.send(f"❌ No results found for the given tags. `{tags}` on Danbooru.")
+            return
 
+        print(f"Resolved user input '{tags}' to exact tag '{exact_tag}' for Danbooru search.")
         exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
         if exact_tag is None:
             return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
@@ -242,6 +248,7 @@ async def isNSFW(interaction, tags):
             return None
         
         if 'rating:' not in tags:
+            print(f"User input '{tags}' does not contain a rating tag. Adding 'rating:safe'.")
             tags = f"{tags} rating:safe".strip()
     return tags
 
@@ -261,12 +268,13 @@ async def auto_resolve_tag(query: str) -> str:
     Hàm này dịch từ khóa gõ tay của người dùng thành Tag chuẩn của Danbooru.
     Ví dụ: 'miku project sekai' -> 'hatsune_miku_(project_sekai)'
     """
+
     # Thay thế dấu cách bằng dấu * để quét rộng. 
     # Ví dụ: "miku project sekai" -> "*miku*project*sekai*"
     formatted_query = "*".join(query.strip().split())
     
     params = {
-        'search[name_matches]': f'*{formatted_query}*',
+        'search[name_or_alias_matches]': f'{formatted_query}*',
         'search[order]': 'count', # pioritize tags with higher post counts
         'limit': 1
     }
