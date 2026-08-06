@@ -1,6 +1,7 @@
+.vscode/
+.vscode/settings.json
 .env
 .venv/
 testing.py
 __pycache__/
-.vscode/
-.vscode/settings.json
+
