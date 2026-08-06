@@ -18,6 +18,7 @@ class Client(commands.Bot):
     async def setup_hook(self):
         # Sync the command tree with Discord
         await self.load_extension('module.danbooru')
+        await self.load_extension('module.random_nuke')
         print("modules loaded successfully.")
     
     async def on_ready(self):
@@ -32,7 +33,8 @@ class Client(commands.Bot):
             try:
                 # Clear local commands for the guild
                 self.tree.clear_commands(guild=guild)
-                await self.tree.sync(guild=guild)
+                # self.tree.copy_global_to(guild=guild)
+                # await self.tree.sync(guild=guild)
                 print(f"Đã xóa lệnh Local bị trùng tại server: {guild.name}")
             except Exception as e:
                 print(f"Lỗi khi xóa lệnh Local ở {guild.name}: {e}")

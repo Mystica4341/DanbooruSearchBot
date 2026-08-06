@@ -2,7 +2,7 @@ import discord
 import os
 from discord.ext import commands
 from discord import app_commands
-from helper.danbooru_embed import ImageEmbed, TextEmbed
+from helpers.danbooru_embed import ImageEmbed, TextEmbed, VideoEmbed
 import aiohttp
 from typing import Optional
 
@@ -235,6 +235,115 @@ class DanbooruModule(commands.Cog):
             except Exception as e:
                 await interaction.followup.send(f"An error occurred while fetching data from Danbooru: {e}")
 
+    @app_commands.command(name='video', description='Searches Danbooru for videos based on the provided query.')
+    @app_commands.describe(tags='The tags to search for', limit='Number of results to return (max 100)')
+    async def video(self, interaction: discord.Interaction, tags: str, limit: Optional[int] = 10):
+        """Searches Danbooru for videos based on the provided tags."""
+
+        await interaction.response.defer()
+
+        exact_tag = await auto_resolve_tag(tags)
+                
+        # Nếu gõ bậy bạ không ra tag nào trên Danbooru
+        if not exact_tag:
+            await interaction.followup.send(f"❌ No results found for the given tags. `{tags}` on Danbooru.")
+            return
+
+        print(f"Resolved user input '{tags}' to exact tag '{exact_tag}' for Danbooru search.")
+        exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
+        if exact_tag is None:
+            return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
+
+        params = {
+            'tags': f'{exact_tag} animated',
+            'limit': limit or 10,
+        }
+
+        # Add API key and login if they are set in the environment variables
+        if self.api_key and self.api_login:
+            params['api_key'] = self.api_key
+            params['login'] = self.api_login
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                headers = {
+                    'User-Agent': 'MyDiscordBot/1.0 (by Mirera on Discord)'
+                }
+                
+                async with session.get("https://danbooru.donmai.us/posts.json", params=params, headers=headers) as response:
+                    
+                    if response.status == 200:
+                        data = await response.json()
+                        print(f"Fetched {len(data)} posts from Danbooru for tags '{tags}' with limit {limit}.")
+                        # Filter out posts that don't have a valid file_url (exclude posts that are deleted or have no image or premium content)
+                        valid_posts = [post for post in data if post.get('file_url') is not None]
+
+                        if len(valid_posts) > 0:
+                            view = VideoEmbed(valid_posts, tags)
+                            result = await view.create_embed()
+                            await interaction.followup.send(content=result['content'], embed=result['embed'], view=view)
+
+                        else:
+                            await interaction.followup.send("No results found for the given tags.")
+
+                    else:
+                        await interaction.followup.send(f"Error: Unable to fetch data from Danbooru (Status Code: {response.status}: {response.reason})")
+
+            except Exception as e:
+                await interaction.followup.send(f"An error occurred while fetching data from Danbooru: {e}")
+
+    @app_commands.command(name='video_nsfw', description='Fetches a list of random videos from Danbooru')
+    @app_commands.describe(tag='Tag to search for', limit='Number of results to return (max 100)')
+    async def video_nsfw(self, interaction: discord.Interaction, tag: str, limit: Optional[int] = 10):
+        """Search Danbooru for random NSFW videos based on the provided tag."""
+
+        await interaction.response.defer()
+
+        exact_tag = await auto_resolve_tag(tag)
+        if not exact_tag:
+            await interaction.followup.send(f"❌ No results found for the given tag. `{tag}` on Danbooru.")
+            return
+
+        print(f"Resolved user input '{tag}' to exact tag '{exact_tag}' for Danbooru search.")
+        exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
+        if exact_tag is None:
+            return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
+
+        params = {
+            'tags': f'{exact_tag} animated rating:e',  # Explicit ratings
+            'limit': limit or 10
+        }
+
+        if self.api_key and self.api_login:
+            params['api_key'] = self.api_key
+            params['login'] = self.api_login
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                header = {
+                    'User-Agent': 'MyDiscordBot/1.0 (by Mirera on Discord)'
+                }
+
+                async with session.get("https://danbooru.donmai.us/posts.json", params=params, headers=header) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        print(f"Fetched {len(data)} posts from Danbooru for tags '{tag}' with limit {limit}.")
+                        # Filter out posts that don't have a valid file_url (exclude posts that are deleted or have no image or premium content)
+                        valid_posts = [post for post in data if post.get('file_url') is not None]
+
+                        if len(valid_posts) > 0:
+                            view = VideoEmbed(valid_posts, tag)
+                            result = await view.create_embed()
+                            await interaction.followup.send(content=result['content'], embed=result['embed'], view=view)
+
+                        else:
+                            await interaction.followup.send("No results found for the given tags.")
+
+                    else:
+                        await interaction.followup.send(f"Error: Unable to fetch data from Danbooru (Status Code: {response.status}: {response.reason})")
+
+            except Exception as e:
+                await interaction.followup.send(f"An error occurred while fetching data from Danbooru: {e}")
 
 async def setup(bot):
     await bot.add_cog(DanbooruModule(bot))
