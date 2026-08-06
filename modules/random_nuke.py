@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord import app_commands
 from typing import Optional
 from helpers.nhentai_embed import ImageEmbed
+from helpers.nsfw_check import isNSFW
 import aiohttp
 
 class NhentaiModule(commands.Cog):
@@ -53,12 +54,6 @@ class NhentaiModule(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(NhentaiModule(bot))
-
-async def isNSFW(interaction):
-  if not interaction.channel.is_nsfw():
-      await interaction.followup.send("NSFW content is not allowed in this channel.")
-      return False
-  return True
 
 # search_url = f"https://nhentai.net/api/galleries/search?query={query}"
 # async with aiohttp.ClientSession() as session:

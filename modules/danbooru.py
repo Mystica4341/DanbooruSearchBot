@@ -3,6 +3,7 @@ import os
 from discord.ext import commands
 from discord import app_commands
 from helpers.danbooru_embed import ImageEmbed, TextEmbed, VideoEmbed
+from helpers.nsfw_check import isNSFW
 import aiohttp
 from typing import Optional
 
@@ -348,17 +349,9 @@ class DanbooruModule(commands.Cog):
 async def setup(bot):
     await bot.add_cog(DanbooruModule(bot))
 
-async def isNSFW(interaction, tags):
+async def NSFW_check(interaction, tags):
     # check if the channel is NSFW and if the tags contain NSFW content
-    if not interaction.channel.is_nsfw():
-        if 'rating:e' in tags or 'rating:q' in tags:
-            # If the channel is not NSFW and the user is trying to search for NSFW content, send a warning message and return
-            await interaction.followup.send("NSFW content is not allowed in this channel.")
-            return None
-        
-        if 'rating:' not in tags:
-            print(f"User input '{tags}' does not contain a rating tag. Adding 'rating:safe'.")
-            tags = f"{tags} rating:safe".strip()
+    
     return tags
 
 async def check_tag_limit(interaction, params):
