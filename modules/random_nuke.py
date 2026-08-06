@@ -10,22 +10,29 @@ import aiohttp
 class NhentaiModule(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
         self.search_url = "https://nhentai.net/api/v2/search"
 
     @app_commands.command(name="n_search", description="Search doujinshi on nhentai.net")
-    @app_commands.describe(query=f"The search query (\"\" for exact search) ('artist:', 'tag:') ('-' for exclude)", language="Optional language filter", offset="Optional offset for pagination 25 results per page")
-    async def n_search(self, interaction: discord.Interaction, query: str, language: Optional[str] = '',  offset: Optional[int] = 1):
+    @app_commands.describe(query=f"The search query (\"\" for exact search) ('artist:', 'tag:') ('-' for exclude)", language="Optional language filter", sort="Optional sort order (date, popular, today, week, month)", offset="Optional offset for pagination 25 results per page")
+    async def n_search(self, interaction: discord.Interaction, query: str, language: Optional[str] = '', sort: Optional[str] = 'date', offset: Optional[int] = 1):
         """Search doujinshi on nhentai.net based on the provided query."""
 
         await interaction.response.defer()  # Defer the response to give time for processing
+        
+        if sort == "week":
+          sort = "popular-week"
+        elif sort == "month":
+          sort = "popular-month"
+        elif sort == "today":
+          sort = "popular-today"
 
         if not await isNSFW(interaction):  # Check if the channel is NSFW
           return
 
         params = {
            "query": query + (f" language:{language}" if language else ""), 
-           "page": offset
+           "page": offset,
+           "sort": sort
           }
 
         async with aiohttp.ClientSession() as session:
