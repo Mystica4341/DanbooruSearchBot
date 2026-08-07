@@ -28,23 +28,22 @@ class Client(commands.Bot):
         print(f'Danbooru Search Bot is ready and running!')
         print('------')
 
-        # 1. Clear all local commands for each guild the bot is in
+        # 1. Copy lệnh vào từng server (Local) để lệnh cập nhật ngay lập tức
         for guild in self.guilds:
             try:
-                # Clear local commands for the guild
-                self.tree.clear_commands(guild=guild)
                 self.tree.copy_global_to(guild=guild)
-                await self.tree.sync(guild=guild)
-                print(f"Đã xóa lệnh Local bị trùng tại server: {guild.name}")
+                synced = await self.tree.sync(guild=guild)
+                print(f"Đã đồng bộ {len(synced)} lệnh Local cho server: {guild.name}")
             except Exception as e:
-                print(f"Lỗi khi xóa lệnh Local ở {guild.name}: {e}")
+                print(f"Lỗi khi đồng bộ ở {guild.name}: {e}")
 
-        # 2. Resync global commands
+        # 2. XÓA bộ lệnh Global trên hệ thống Discord để tránh bị nhân đôi
         try:
-            synced = await self.tree.sync()
-            print(f"Đã đồng bộ {len(synced)} slash command(s) Global!")
+            self.tree.clear_commands(guild=None) # Xóa lệnh global trong nội bộ tree
+            await self.tree.sync()               # Push tree rỗng lên hệ thống -> Discord xóa lệnh thừa
+            print("Đã dọn dẹp lệnh Global để hết bị trùng lặp!")
         except Exception as e:
-            print(f"Lỗi khi đồng bộ Global: {e}")
+            print(f"Lỗi khi dọn dẹp Global: {e}")
 
         print('------')
 
