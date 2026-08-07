@@ -25,17 +25,17 @@ class ImageEmbed(EmbedPaginator):
         character = post.get('tag_string_character', 'Unknown Character')
 
         embed = discord.Embed(
-            title=f"Kết quả cho: {self.tags}", 
+            title=f"Found images for: {self.tags}", 
             color=discord.Color.blue()
         )
 
         embed.set_image(url=image_url)
         embed.add_field(name="Artist", value=author, inline=True)
         embed.add_field(name="Character", value=character, inline=True)
-        embed.description = f"[Xem bài gốc trên Danbooru](https://danbooru.donmai.us/posts/{post_id})"
+        embed.description = f"[View original post on Danbooru](https://danbooru.donmai.us/posts/{post_id})"
 
         # Footer (ex: 1/10)
-        embed.set_footer(text=f"Trang {self.current_page + 1}/{self.total_pages}")
+        embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
         return embed
       
       except Exception as e:
@@ -73,13 +73,13 @@ class TextEmbed(EmbedPaginator):
                     description += f"`{index}.` **{tag}**\n"
             
             embed = discord.Embed(
-                title=f"🔎 Tìm thấy {len(self.tags_list)} tags cho: '{self.query}'", 
+                title=f"🔎 Found {len(self.tags_list)} tags for: '{self.query}'", 
                 description=description,
                 color=discord.Color.green()
             )
             
             # Footer (ex: 1/10)
-            embed.set_footer(text=f"Trang {self.current_page + 1}/{self.total_pages}")
+            embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
             return embed
             
         except Exception as e:
@@ -105,16 +105,16 @@ class VideoEmbed(EmbedPaginator):
             character = post.get('tag_string_character', 'Unknown Character')
 
             embed = discord.Embed(
-                title=f"Kết quả videos cho: {self.tags}", 
+                title=f"Found videos for: {self.tags}", 
                 color=discord.Color.blue()
             )
 
             embed.add_field(name="Artist", value=author, inline=True)
             embed.add_field(name="Character", value=character, inline=True)
-            embed.description = f"[Xem bài gốc trên Danbooru](https://danbooru.donmai.us/posts/{post_id})"
+            embed.description = f"[View original post on Danbooru](https://danbooru.donmai.us/posts/{post_id})"
 
             # Footer (ex: 1/10)
-            embed.set_footer(text=f"Trang {self.current_page + 1}/{self.total_pages}")
+            embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
 
             return {'content': f"[\u200B]({video_url})", 'embed': embed}
         

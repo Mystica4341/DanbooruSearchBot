@@ -31,7 +31,7 @@ class ImageEmbed(EmbedPaginator):
         embed.set_image(url=cover_url)
 
         # Footer (ex: 1/10)
-        embed.set_footer(text=f"ID: {doujinshi_id} \nTrang {self.current_page + 1}/{self.total_pages}")
+        embed.set_footer(text=f"ID: {doujinshi_id} \nPage {self.current_page + 1}/{self.total_pages}")
         return embed
       
       except Exception as e:
@@ -54,7 +54,7 @@ class ImageEmbed(EmbedPaginator):
             view = DetailImageEmbed(data)
             await interaction.response.edit_message(embed=view.create_embed(), view=view)
         else:
-            await interaction.followup.send("Không thể tải dữ liệu truyện.", ephemeral=True)
+            await interaction.followup.send("No results found for your query.", ephemeral=True)
 
 class DetailImageEmbed(EmbedPaginator):
     def __init__(self, results):
@@ -112,7 +112,7 @@ class DetailImageEmbed(EmbedPaginator):
         embed.set_image(url=image_url)
 
         # Footer (ex: 1/10)
-        embed.set_footer(text=f"ID: {doujinshi_id} \nTrang {self.current_page + 1}/{self.total_pages}")
+        embed.set_footer(text=f"ID: {doujinshi_id} \nPage {self.current_page + 1}/{self.total_pages}")
         return embed
       
       except Exception as e:
