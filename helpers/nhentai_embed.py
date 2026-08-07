@@ -58,13 +58,14 @@ class DetailImageEmbed(EmbedPaginator):
         doujinshi_url = f"https://nhentai.net/g/{doujinshi_id}"
 
         if (self.current_page == 0):
+            # Only show title on the first page (cover page)
             title = index_result.get("title", {}).get("english", "No Title")
+
             cover_data = index_result.get("thumbnail").get("path")
             # image_url for cover (aka thumbnail)
             image_url = f"https://t1.nhentai.net/{cover_data}"
 
         else:
-            title = ""
             pages_list = index_result.get("pages", [])
 
             # Cover duplicate with the first page, so we need to adjust the index for pages_list
@@ -82,7 +83,7 @@ class DetailImageEmbed(EmbedPaginator):
                 image_url = None
 
         embed = discord.Embed(
-            title=title,
+            title=title or "",
             url=doujinshi_url,
             color=discord.Color.dark_green()
         )

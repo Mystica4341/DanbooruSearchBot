@@ -18,7 +18,7 @@ class Client(commands.Bot):
     async def setup_hook(self):
         # Sync the command tree with Discord
         await self.load_extension('modules.danbooru')
-        await self.load_extension('modules.random_nuke')
+        await self.load_extension('modules.nhentai')
         print("modules loaded successfully.")
     
     async def on_ready(self):
