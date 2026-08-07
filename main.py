@@ -51,13 +51,12 @@ bot = Client()
 
 @bot.event
 async def on_guild_join(guild: discord.Guild):
-    # Copy global commands to the new guild
-    bot.tree.copy_global_to(guild=guild)
-
-    # Sync slash commands for the new guild
-    await bot.tree.sync(guild=guild)
-
-    print(f"Đã auto-register slash commands cho guild mới: {guild.name}")
+    try:
+        bot.tree.copy_global_to(guild=guild)
+        synced = await bot.tree.sync(guild=guild)
+        print(f"Đã đồng bộ {len(synced)} lệnh slash commands cho server mới: {guild.name}")
+    except Exception as e:
+        print(f"Lỗi khi đồng bộ ở {guild.name}: {e}")
             
 @bot.command()
 async def ping(ctx: commands.Context):
