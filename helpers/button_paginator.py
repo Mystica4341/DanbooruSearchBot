@@ -16,16 +16,18 @@ class EmbedPaginator(discord.ui.View):
     # Nút Prev
     @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.primary, custom_id="prev_btn")
     async def prev_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.current_page -= 1
-        self.update_buttons()
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        if self.current_page > 0:
+            self.current_page -= 1
+            self.update_buttons()
+            await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
     # Nút Next
     @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.primary, custom_id="next_btn")
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.current_page += 1
-        self.update_buttons()
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        if self.current_page < self.total_pages - 1:
+            self.current_page += 1
+            self.update_buttons()
+            await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
     def create_embed(self):
         raise NotImplementedError("This method should be implemented in subclasses or instances where needed.")
