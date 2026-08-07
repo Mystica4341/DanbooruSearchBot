@@ -57,7 +57,7 @@ class NhentaiModule(commands.Cog):
                     results = data.get("result", [])
                     view = ImageEmbed(results)
 
-                  print(f"Fetched {len(results)} results from {url} for query '{query}', language {language}, sort {sort}, offset {offset}.")
+                  print(f"Fetched {len(results)} results from {url} for query: {formatted_query}, language: {language}, sort: {sort}, offset: {offset}.")
 
                   if results:
                     
