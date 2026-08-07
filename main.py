@@ -33,7 +33,7 @@ class Client(commands.Bot):
             try:
                 # Clear local commands for the guild
                 self.tree.clear_commands(guild=guild)
-                # self.tree.copy_global_to(guild=guild)
+                self.tree.copy_global_to(guild=guild)
                 await self.tree.sync(guild=guild)
                 print(f"Đã xóa lệnh Local bị trùng tại server: {guild.name}")
             except Exception as e:

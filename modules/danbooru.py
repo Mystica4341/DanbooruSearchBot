@@ -3,7 +3,6 @@ import os
 from discord.ext import commands
 from discord import app_commands
 from helpers.danbooru_embed import ImageEmbed, TextEmbed, VideoEmbed
-from helpers.nsfw_check import isNSFW
 import aiohttp
 from typing import Optional
 
@@ -90,7 +89,7 @@ class DanbooruModule(commands.Cog):
             return
 
         print(f"Resolved user input '{tags}' to exact tag '{exact_tag}' for Danbooru search.")
-        exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
+        exact_tag = await NSFW_check(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
         if exact_tag is None:
             return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
 
@@ -145,7 +144,7 @@ class DanbooruModule(commands.Cog):
             return
 
         print(f"Resolved user input '{tags}' to exact tag '{exact_tag}' for Danbooru search.")
-        exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
+        exact_tag = await NSFW_check(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
         if exact_tag is None:
             return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
 
@@ -194,7 +193,7 @@ class DanbooruModule(commands.Cog):
 
         await interaction.response.defer()
 
-        tags = await isNSFW(interaction, 'rating:e')
+        tags = await NSFW_check(interaction, 'rating:e')
         if tags is None:
             return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
 
@@ -251,7 +250,7 @@ class DanbooruModule(commands.Cog):
             return
 
         print(f"Resolved user input '{tags}' to exact tag '{exact_tag}' for Danbooru search.")
-        exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
+        exact_tag = await NSFW_check(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
         if exact_tag is None:
             return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
 
@@ -306,7 +305,7 @@ class DanbooruModule(commands.Cog):
             return
 
         print(f"Resolved user input '{tag}' to exact tag '{exact_tag}' for Danbooru search.")
-        exact_tag = await isNSFW(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
+        exact_tag = await NSFW_check(interaction, exact_tag)  # Check if the channel is NSFW and adjust tags accordingly
         if exact_tag is None:
             return  # Exit if the channel is not NSFW and the user tried to search for NSFW content
 
@@ -351,7 +350,15 @@ async def setup(bot):
 
 async def NSFW_check(interaction, tags):
     # check if the channel is NSFW and if the tags contain NSFW content
-    
+    if not interaction.channel.is_nsfw():
+        if 'rating:e' in tags or 'rating:q' in tags:
+            # If the channel is not NSFW and the user is trying to search for NSFW content, send a warning message and return
+            await interaction.followup.send("NSFW content is not allowed in this channel.")
+            return None
+        
+        if 'rating:' not in tags:
+            print(f"User input '{tags}' does not contain a rating tag. Adding 'rating:safe'.")
+            tags = f"{tags} rating:safe".strip()
     return tags
 
 async def check_tag_limit(interaction, params):
