@@ -1,11 +1,10 @@
 import discord
-import math
-import os
+import aiohttp
 from helpers.button_paginator import EmbedPaginator
 
 class ImageEmbed(EmbedPaginator):
     def __init__(self, results):
-        super().__init__()
+        super().__init__(show_read_button=True)
         self.results = results
 
         # Total pages is the length of the posts list
@@ -37,14 +36,33 @@ class ImageEmbed(EmbedPaginator):
       
       except Exception as e:
           return discord.Embed(title="Error", description=f"An error occurred while creating the embed: {e}", color=discord.Color.red())
-        
+
+    async def on_read(self, interaction: discord.Interaction):
+        # Handle the "Read" button click
+        index_result = self.results[self.current_page]
+
+        detail_url = f"https://nhentai.net/api/v2/galleries/{index_result.get('id')}"
+        print(f"User requested fetching details for doujinshi ID {index_result.get('id')} from {detail_url}")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(detail_url) as response:
+                if response.status == 200:
+                    data = await response.json()
+                else:
+                    data = None
+
+        if data:
+            view = DetailImageEmbed(data)
+            await interaction.response.edit_message(embed=view.create_embed(), view=view)
+        else:
+            await interaction.followup.send("Không thể tải dữ liệu truyện.", ephemeral=True)
+
 class DetailImageEmbed(EmbedPaginator):
     def __init__(self, results):
         super().__init__()
         self.results = results
 
         # Total pages is the length of the posts list
-        self.total_pages = len(self.results[0].get("pages", []))
+        self.total_pages = len(self.results.get("pages", []))
         self.update_buttons()
         
     # Override the create_embed method to display the current post
@@ -52,7 +70,10 @@ class DetailImageEmbed(EmbedPaginator):
       try:
 
         # with id search only 1 result return
-        index_result = self.results[0]
+        index_result = self.results
+
+        # default = null
+        title = ""
 
         doujinshi_id = index_result.get("id")
         doujinshi_url = f"https://nhentai.net/g/{doujinshi_id}"
@@ -83,7 +104,7 @@ class DetailImageEmbed(EmbedPaginator):
                 image_url = None
 
         embed = discord.Embed(
-            title=title or "",
+            title=title,
             url=doujinshi_url,
             color=discord.Color.dark_green()
         )

@@ -51,7 +51,7 @@ class NhentaiModule(commands.Cog):
                   data = await response.json()
                   
                   if "result" not in data:
-                    results = [data]
+                    results = data
                     view = DetailImageEmbed(results)
                   else:
                     results = data.get("result", [])

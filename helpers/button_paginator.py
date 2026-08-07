@@ -1,10 +1,13 @@
 import discord
 
 class EmbedPaginator(discord.ui.View):
-    def __init__(self):
+    def __init__(self, show_read_button=False):
         super().__init__(timeout=180)  # Hết hạn sau 3 phút
         self.current_page = 0
         self.total_pages = 1
+
+        if not show_read_button:
+            self.remove_item(self.read_button)  # Remove the read button if not needed
 
     def update_buttons(self):
         # Vô hiệu hóa nút "Prev" nếu đang ở trang đầu
@@ -21,6 +24,11 @@ class EmbedPaginator(discord.ui.View):
             self.update_buttons()
             await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
+    @discord.ui.button(label="Read 📖", style=discord.ButtonStyle.danger, custom_id="read_btn")
+    async def read_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # This method should be overridden in subclasses to provide specific functionality
+        await self.on_read(interaction)
+
     # Nút Next
     @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.primary, custom_id="next_btn")
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -31,3 +39,6 @@ class EmbedPaginator(discord.ui.View):
 
     def create_embed(self):
         raise NotImplementedError("This method should be implemented in subclasses or instances where needed.")
+
+    async def on_read(self, interaction: discord.Interaction):
+        pass
