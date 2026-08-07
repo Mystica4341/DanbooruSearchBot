@@ -44,23 +44,27 @@ class DetailImageEmbed(EmbedPaginator):
         self.results = results
 
         # Total pages is the length of the posts list
-        self.total_pages = len(self.results[0].get("pages", [])) + 1  # +1 for the cover page
+        self.total_pages = len(self.results[0].get("pages", []))
         self.update_buttons()
         
     # Override the create_embed method to display the current post
     def create_embed(self):
       try:
 
+        # with id search only 1 result return
         index_result = self.results[0]
 
-        title = index_result.get("title", {}).get("english", "No Title")
         doujinshi_id = index_result.get("id")
         doujinshi_url = f"https://nhentai.net/g/{doujinshi_id}"
 
         if (self.current_page == 0):
+            title = index_result.get("title", {}).get("english", "No Title")
             cover_data = index_result.get("thumbnail").get("path")
+            # image_url for cover (aka thumbnail)
             image_url = f"https://t1.nhentai.net/{cover_data}"
+
         else:
+            title = ""
             pages_list = index_result.get("pages", [])
 
             # Cover duplicate with the first page, so we need to adjust the index for pages_list
@@ -71,6 +75,7 @@ class DetailImageEmbed(EmbedPaginator):
             if page_index < len(pages_list):
 
                 page_data = pages_list[page_index]
+                # image_url for individual pages
                 image_url = f"https://i.nhentai.net/{page_data.get('path')}"
 
             else:
