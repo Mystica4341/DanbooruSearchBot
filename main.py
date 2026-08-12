@@ -1,3 +1,4 @@
+import aiohttp
 import discord
 import os
 from dotenv import load_dotenv
@@ -14,8 +15,11 @@ class Client(commands.Bot):
         intents.message_content = True
         # self.tree = app_commands.CommandTree(self)
         super().__init__(command_prefix='$', intents=intents)
+        self.session: aiohttp.ClientSession = None
         
     async def setup_hook(self):
+        # Create a single aiohttp session for the bot to use
+        self.session = aiohttp.ClientSession()
         # Sync the command tree with Discord
         await self.load_extension('modules.danbooru')
         await self.load_extension('modules.nhentai')
@@ -46,6 +50,12 @@ class Client(commands.Bot):
             print(f"Error clearing global commands: {e}")
 
         print('------')
+
+    async def close(self):
+        # Đóng session an toàn khi bot tắt
+        if self.session:
+            await self.session.close()
+        await super().close()
 
 bot = Client()
 

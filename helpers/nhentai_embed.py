@@ -3,9 +3,10 @@ import aiohttp
 from helpers.button_paginator import EmbedPaginator
 
 class ImageEmbed(EmbedPaginator):
-    def __init__(self, results):
+    def __init__(self, results, session):
         super().__init__(show_read_button=True)
         self.results = results
+        self.session = session
 
         # Total pages is the length of the posts list
         self.total_pages = len(self.results) 
@@ -43,12 +44,12 @@ class ImageEmbed(EmbedPaginator):
 
         detail_url = f"https://nhentai.net/api/v2/galleries/{index_result.get('id')}"
         print(f"User requested fetching details for doujinshi ID {index_result.get('id')} from {detail_url}")
-        async with aiohttp.ClientSession() as session:
-            async with session.get(detail_url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                else:
-                    data = None
+        session = self.session
+        async with session.get(detail_url) as response:
+            if response.status == 200:
+                data = await response.json()
+            else:
+                data = None
 
         if data:
             view = DetailImageEmbed(data)

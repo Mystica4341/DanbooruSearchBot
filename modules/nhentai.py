@@ -6,14 +6,19 @@ from typing import Optional
 from helpers.nhentai_embed import ImageEmbed, DetailImageEmbed
 from helpers.nsfw_check import isNSFW
 import aiohttp
+from cachetools import TTLCache
 
 class NhentaiModule(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.cache = TTLCache(maxsize=100, ttl=900)
+        self.session = bot.session  # Use the shared aiohttp session from the bot
         self.search_url = "https://nhentai.net/api/v2/search"
         self.gallery_url = "https://nhentai.net/api/v2/galleries"
 
-    @app_commands.command(name="n_search", description="Search doujinshi on nhentai.net")
+    nhentai_modules = app_commands.Group(name="nhentai", description="Nhentai search commands")
+
+    @nhentai_modules.command(name="search", description="Search doujinshi on nhentai.net based on the provided query.")
     @app_commands.describe(query=f"The search query (seperate by comma) ('artist:', 'tag:') ('-' for exclude)", language="Optional language filter", sort="Optional sort order (date, popular, today, week, month)", offset="Optional offset for pagination 25 results per page")
     async def n_search(self, interaction: discord.Interaction, query: str, language: Optional[str] = '', sort: Optional[str] = 'date', offset: Optional[int] = 1):
         """Search doujinshi on nhentai.net based on the provided query."""
@@ -33,6 +38,8 @@ class NhentaiModule(commands.Cog):
         if query.isdigit():
           url = self.gallery_url + f"/{query}"
           params = {}
+          cache_key = f"nhentai_id_{query}"
+          formatted_query = query
         else:
           url = self.search_url
           # Cắt chuỗi bằng dấu phẩy, xóa khoảng trắng thừa ở 2 đầu mỗi phần tử, bọc ngoặc kép và nối lại bằng khoảng trắng
@@ -42,35 +49,57 @@ class NhentaiModule(commands.Cog):
              "page": offset,
              "sort": sort
           }
+          cache_key = f"nhentai_search_{formatted_query}_{language}_{sort}_{offset}"
 
-        async with aiohttp.ClientSession() as session:
-            try:
-              async with session.get(url, params=params) as response:
+        # Check if the results are already cached
+        if cache_key in self.cache:
+            print(f"Caching results for tags: {query}, language: {language}")
+            data = self.cache[cache_key]
 
-                if response.status == 200:
-                  data = await response.json()
-                  
-                  if "result" not in data:
-                    results = data
-                    view = DetailImageEmbed(results)
-                  else:
-                    results = data.get("result", [])
-                    view = ImageEmbed(results)
+            if "result" not in data:
+              view = DetailImageEmbed(data)
 
-                  print(f"Fetched {len(results)} results from {url} for query: {formatted_query}, language: {language}, sort: {sort}, offset: {offset}.")
+            else:
+              results = data.get("result", [])
+              if results:
+                  view = ImageEmbed(results, self.bot.session)
+              else:
+                  await interaction.followup.send("No results found for your query in cache.")
+                  return
+    
+            await interaction.followup.send(embed=view.create_embed(), view=view)
+            return
 
-                  if results:
-                    
-                    await interaction.followup.send(embed=view.create_embed(), view=view)
+        session = self.bot.session
+        try:
+          async with session.get(url, params=params) as response:
 
-                  else:
-                      await interaction.followup.send("No results found for your query.")
+            if response.status == 200:
+              data = await response.json()
 
-                else:
-                    await interaction.followup.send(f"Failed to fetch data from nhentai.net. (Status Code: {response.status}: {response.reason})")
-                    
-            except Exception as e:
-                await interaction.followup.send(f"An error occurred while fetching data: {e}")
+              self.cache[cache_key] = data  # Cache the results
+              
+              if "result" not in data:
+                results = data
+                view = DetailImageEmbed(results)
+              else:
+                results = data.get("result", [])
+                view = ImageEmbed(results, self.bot.session)
+
+              print(f"Fetched {len(results)} results from {url} for query: {formatted_query}, language: {language or 'None'}, sort: {sort}, offset: {offset}.")
+
+              if results:
+                
+                await interaction.followup.send(embed=view.create_embed(), view=view)
+
+              else:
+                  await interaction.followup.send("No results found for your query.")
+
+            else:
+                await interaction.followup.send(f"Failed to fetch data from nhentai.net. (Status Code: {response.status}: {response.reason})")
+                
+        except Exception as e:
+            await interaction.followup.send(f"An error occurred while fetching data: {e}")
 
 async def setup(bot):
     await bot.add_cog(NhentaiModule(bot))
