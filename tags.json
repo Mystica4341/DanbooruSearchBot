@@ -3901,27 +3901,11 @@
         "count": 136055
     },
     {
-        "id": 23599,
-        "type": "artist",
-        "name": "oobanburumai",
-        "slug": "oobanburumai",
-        "url": "/artist/oobanburumai/",
-        "count": 78
-    },
-    {
         "id": 33172,
         "type": "category",
         "name": "doujinshi",
         "slug": "doujinshi",
         "url": "/category/doujinshi/",
         "count": 500398
-    },
-    {
-        "id": 148306,
-        "type": "group",
-        "name": "tenkuu guardrail",
-        "slug": "tenkuu-guardrail",
-        "url": "/group/tenkuu-guardrail/",
-        "count": 9
     }
 ]
