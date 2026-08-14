@@ -3,7 +3,8 @@ import discord
 import os
 from dotenv import load_dotenv
 from discord.ext import commands  
-from discord import app_commands  
+from discord import app_commands
+from helpers.nhentai_tag_manager import TagManager
 
 load_dotenv()
 
@@ -16,6 +17,7 @@ class Client(commands.Bot):
         # self.tree = app_commands.CommandTree(self)
         super().__init__(command_prefix='$', intents=intents)
         self.session: aiohttp.ClientSession = None
+        self.tag_manager = TagManager()  # Initialize the TagManager
         
     async def setup_hook(self):
         # Create a single aiohttp session for the bot to use
@@ -29,7 +31,7 @@ class Client(commands.Bot):
         print('------')
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
-        print(f'Danbooru Search Bot is ready and running!')
+        print(f'Bot is ready and running!')
         print('------')
 
         # 1. Copy lệnh vào từng server (Local) để lệnh cập nhật ngay lập tức

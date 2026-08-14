@@ -75,6 +75,10 @@ class DetailImageEmbed(EmbedPaginator):
 
         # default = null
         title = ""
+        artist = ""
+        tags = ""
+        character = ""
+        parody = ""
 
         doujinshi_id = index_result.get("id")
         doujinshi_url = f"https://nhentai.net/g/{doujinshi_id}"
@@ -83,10 +87,20 @@ class DetailImageEmbed(EmbedPaginator):
             # Only show title on the first page (cover page)
             title = index_result.get("title", {}).get("english", "No Title")
 
-            cover_data = index_result.get("thumbnail").get("path")
-            # image_url for cover (aka thumbnail)
-            image_url = f"https://t1.nhentai.net/{cover_data}"
+            # get artist name from tags [] where type is "artist" and tag name from tags where type is "tag"
+            raw_tags = index_result.get("tags", [])
 
+            artist_list = [tag.get("name") for tag in raw_tags if tag.get("type") == "artist"]
+            artist = ", ".join(artist_list) if artist_list else "Unknown Artist"
+            
+            tag_list = [tag.get("name") for tag in raw_tags if tag.get("type") == "tag"]
+            tags = ", ".join(tag_list) if tag_list else "None"
+
+            character_list = [tag.get("name") for tag in raw_tags if tag.get("type") == "character"]
+            character = ", ".join(character_list) if character_list else "None"
+
+            parody_list = [tag.get("name") for tag in raw_tags if tag.get("type") == "parody"]
+            parody = ", ".join(parody_list) if parody_list else "None"
         else:
             pages_list = index_result.get("pages", [])
 
@@ -112,6 +126,12 @@ class DetailImageEmbed(EmbedPaginator):
 
         embed.set_image(url=image_url)
 
+        if self.current_page == 0:
+            embed.add_field(name="Artist", value=artist, inline=True)
+            embed.add_field(name="Characters", value=character, inline=True)
+            embed.add_field(name="Parody", value=parody, inline=True)
+            embed.add_field(name="Tags", value=tags, inline=False)
+            
         # Footer (ex: 1/10)
         embed.set_footer(text=f"ID: {doujinshi_id} \nPage {self.current_page + 1}/{self.total_pages}")
         return embed

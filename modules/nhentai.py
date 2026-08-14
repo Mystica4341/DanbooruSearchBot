@@ -5,7 +5,6 @@ from discord import app_commands
 from typing import Optional
 from helpers.nhentai_embed import ImageEmbed, DetailImageEmbed
 from helpers.nsfw_check import isNSFW
-import aiohttp
 from cachetools import TTLCache
 
 class NhentaiModule(commands.Cog):
@@ -89,7 +88,6 @@ class NhentaiModule(commands.Cog):
               print(f"Fetched {len(results)} results from {url} for query: {formatted_query}, language: {language or 'None'}, sort: {sort}, offset: {offset}.")
 
               if results:
-                
                 await interaction.followup.send(embed=view.create_embed(), view=view)
 
               else:
@@ -98,6 +96,43 @@ class NhentaiModule(commands.Cog):
             else:
                 await interaction.followup.send(f"Failed to fetch data from nhentai.net. (Status Code: {response.status}: {response.reason})")
                 
+        except Exception as e:
+            await interaction.followup.send(f"An error occurred while fetching data: {e}")
+
+    @nhentai_modules.command(name="random", description="Get a random doujinshi from nhentai.net.")
+    async def n_random(self, interaction: discord.Interaction):
+        """Get a random doujinshi from nhentai.net."""
+
+        await interaction.response.defer()
+
+        if not await isNSFW(interaction):
+          return
+
+        session = self.bot.session
+        try:
+          async with session.get("https://nhentai.net/api/v2/galleries/random") as response:
+            if response.status == 200:
+              data = await response.json()
+
+              detail_url = f"https://nhentai.net/api/v2/galleries/{data.get('id')}"
+              print(f"User requested fetching a random doujinshi ID {data.get('id')} from {detail_url}")
+
+              async with session.get(detail_url) as detail_response:
+                if detail_response.status == 200:
+                  detail_data = await detail_response.json()
+                else:
+                  detail_data = None
+
+              if data:
+                view = DetailImageEmbed(detail_data)
+                await interaction.followup.send(embed=view.create_embed(), view=view)
+
+              else:
+                await interaction.followup.send("No random doujinshi found.")
+
+            else:
+                await interaction.followup.send(f"Failed to fetch data from nhentai.net. (Status Code: {response.status}: {response.reason})")
+
         except Exception as e:
             await interaction.followup.send(f"An error occurred while fetching data: {e}")
 
