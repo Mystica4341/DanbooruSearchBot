@@ -101,23 +101,24 @@ class DetailImageEmbed(EmbedPaginator):
 
             parody_list = [tag.get("name") for tag in raw_tags if tag.get("type") == "parody"]
             parody = ", ".join(parody_list) if parody_list else "None"
+        
+        pages_list = index_result.get("pages", [])
+
+        # Cover duplicate with the first page, so we need to adjust the index for pages_list
+        # page_index = self.current_page - 1  # Adjust for to seperate cover page with 1st page (which not neccessary if you want to include the cover page as the first page)
+
+        page_index = self.current_page
+
+        if page_index < len(pages_list):
+
+            page_data = pages_list[page_index]
+            # image_url for individual pages
+            image_url = f"https://i.nhentai.net/{page_data.get('path')}"
+
         else:
-            pages_list = index_result.get("pages", [])
+            image_url = None
 
-            # Cover duplicate with the first page, so we need to adjust the index for pages_list
-            # page_index = self.current_page - 1  # Adjust for to seperate cover page with 1st page (which not neccessary if you want to include the cover page as the first page)
-
-            page_index = self.current_page
-
-            if page_index < len(pages_list):
-
-                page_data = pages_list[page_index]
-                # image_url for individual pages
-                image_url = f"https://i.nhentai.net/{page_data.get('path')}"
-
-            else:
-                image_url = None
-
+        # Create Embed with the title, URL, and color
         embed = discord.Embed(
             title=title,
             url=doujinshi_url,
