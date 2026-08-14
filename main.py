@@ -2,9 +2,7 @@ import aiohttp
 import discord
 import os
 from dotenv import load_dotenv
-from discord.ext import commands  
-from discord import app_commands
-from helpers.nhentai_tag_manager import TagManager
+from discord.ext import commands
 
 load_dotenv()
 
@@ -17,7 +15,6 @@ class Client(commands.Bot):
         # self.tree = app_commands.CommandTree(self)
         super().__init__(command_prefix='$', intents=intents)
         self.session: aiohttp.ClientSession = None
-        self.tag_manager = TagManager()  # Initialize the TagManager
         
     async def setup_hook(self):
         # Create a single aiohttp session for the bot to use

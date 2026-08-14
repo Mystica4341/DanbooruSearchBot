@@ -24,11 +24,11 @@ class TagManager:
                             # Lưu toàn bộ object vào dict với key là ID
                             self.tags_db[tag_id] = item 
                             
-                print(f"Đã tải thành công {len(self.tags_db)} tags vào bộ nhớ.")
+                print(f"Loaded {len(self.tags_db)} tags from {self.db_path}")
             except Exception as e:
-                print(f"Lỗi khi đọc file tags: {e}")
+                print(f"Error occurred while reading tags file: {e}")
         else:
-            print("Chưa có file tags_db.json, bot sẽ bắt đầu học từ con số 0.")
+            print("No tags.json file found, bot will start learning from scratch.")
 
     async def save_db_async(self):
         """Lưu lại xuống ổ cứng theo đúng định dạng Mảng (List) ban đầu."""
@@ -87,4 +87,4 @@ class TagManager:
         # Chỉ ghi file nếu thực sự có thêm dữ liệu mới
         if is_updated:
             await self.save_db_async()
-            print("Đã học thêm tag mới và lưu vào database!")
+            print(f"Successfully learned new tags and saved to {self.db_path}")

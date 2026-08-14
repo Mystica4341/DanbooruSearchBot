@@ -6,11 +6,13 @@ from typing import Optional
 from helpers.nhentai_embed import ImageEmbed, DetailImageEmbed
 from helpers.nsfw_check import isNSFW
 from cachetools import TTLCache
+from helpers.nhentai_tag_manager import TagManager
 
 class NhentaiModule(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cache = TTLCache(maxsize=100, ttl=900)
+        self.tag_manager = TagManager()
         self.session = bot.session  # Use the shared aiohttp session from the bot
         self.search_url = "https://nhentai.net/api/v2/search"
         self.gallery_url = "https://nhentai.net/api/v2/galleries"
