@@ -80,6 +80,7 @@ class NhentaiModule(commands.Cog):
               
               if "result" not in data:
                 results = data
+                await self.tag_manager.learn_tags_from_detail(results)  # Learn tags from the detail data
                 view = DetailImageEmbed(results)
               else:
                 results = data.get("result", [])

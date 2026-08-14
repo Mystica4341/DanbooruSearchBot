@@ -3,7 +3,7 @@ import os
 import aiofiles
 
 class TagManager:
-    def __init__(self, db_path='tags_db.json'):
+    def __init__(self, db_path='tags.json'):
         self.db_path = db_path
         # Dictionary nội bộ dùng để tra cứu nhanh (O(1) lookup)
         self.tags_db = {} 
@@ -41,20 +41,35 @@ class TagManager:
         except Exception as e:
             print(f"Lỗi khi lưu file tags: {e}")
 
-    def get_tag_names(self, tag_ids_list):
-        """Dịch danh sách ID thành chuỗi tên tag."""
+    def get_tag_names(self, tag_ids_list, tag_type_filter=None):
+        """
+        Dịch danh sách ID thành chuỗi tên tag.
+        Nếu truyền tag_type (vd: 'artist', 'character'), sẽ chỉ lọc ra những tag thuộc loại đó.
+        """
         tag_names = []
         for tag_id in tag_ids_list:
             tag_id_str = str(tag_id)
             
             if tag_id_str in self.tags_db:
-                # Trích xuất 'name' từ object lưu trong RAM
+                # Trích xuất object lưu trong RAM
                 tag_object = self.tags_db[tag_id_str]
-                tag_names.append(tag_object.get('name', f"ID:{tag_id_str}"))
-            else:
-                tag_names.append(f"ID:{tag_id_str}")
                 
-        return ", ".join(tag_names)
+                # Kiểm tra điều kiện lọc theo type
+                if tag_type_filter:
+                    # Nếu tag hiện tại có type khớp với type đang tìm thì mới lấy tên
+                    if tag_object.get('type') == tag_type_filter:
+                        tag_names.append(tag_object.get('name', f"ID:{tag_id_str}"))
+                else:
+                    # Nếu không truyền tag_type thì lấy tất cả
+                    tag_names.append(tag_object.get('name', f"ID:{tag_id_str}"))
+            else:
+                # Nếu ID chưa có trong DB (chưa học)
+                # Ta chỉ hiển thị dạng "ID:..." khi không lọc type, vì ta không biết ID này thuộc type gì
+                if not tag_type_filter:
+                    tag_names.append(f"ID:{tag_id_str}")
+                    
+        # Trả về chuỗi cách nhau bởi dấu phẩy, nếu rỗng thì trả về "None" (hoặc "Unknown Artist" tuỳ bạn)
+        return ", ".join(tag_names) if tag_names else ""
 
     async def learn_tags_from_detail(self, detail_data):
         """Học tag mới từ dữ liệu chi tiết truyện và giữ nguyên metadata."""
