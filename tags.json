@@ -3923,37 +3923,5 @@
         "slug": "azur-lane",
         "url": "/parody/azur-lane/",
         "count": 4069
-    },
-    {
-        "id": 92923,
-        "type": "character",
-        "name": "shikikan",
-        "slug": "shikikan",
-        "url": "/character/shikikan/",
-        "count": 1306
-    },
-    {
-        "id": 22469,
-        "type": "character",
-        "name": "prinz eugen",
-        "slug": "prinz-eugen",
-        "url": "/character/prinz-eugen/",
-        "count": 535
-    },
-    {
-        "id": 124505,
-        "type": "group",
-        "name": "germanium detroit",
-        "slug": "germanium-detroit",
-        "url": "/group/germanium-detroit/",
-        "count": 36
-    },
-    {
-        "id": 137135,
-        "type": "artist",
-        "name": "miso tanuki inka teikoku",
-        "slug": "miso-tanuki-inka-teikoku",
-        "url": "/artist/miso-tanuki-inka-teikoku/",
-        "count": 33
     }
 ]
